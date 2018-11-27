@@ -1,0 +1,108 @@
+Sub StockVolume()
+
+    Dim volume As Double
+    Dim Stock As String
+    Dim ClosePrice As Double
+    Dim OpenPrice As Double
+    Dim Summary As Integer
+    Dim HPticker As String
+    Dim LPticker As String
+    Dim Vticker As String
+    Dim ws As Worksheet
+    
+For Each ws In Worksheets
+    
+    Summary = 2
+    ws.Range("I1") = "Ticker"
+    ws.Range("L1") = "Total Stock Volume"
+    ws.Range("J1") = "Yearly Change"
+    ws.Range("K1") = "Percent Change"
+    ws.Range("O2") = "Greatest % Increase"
+    ws.Range("O3") = "Greatest % Decrease"
+    ws.Range("O4") = "Greatest Total Volume"
+    ws.Range("P1") = "Ticker"
+    ws.Range("Q1") = "Value"
+
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+
+'This tests the cells until the tickers are not the same and then takes the ticker and puts in a new column
+
+    For i = 2 To lastrow
+    
+        If InStr(ws.Cells(i, 2), "0101") Then
+        OpenPrice = ws.Cells(i, 3).Value
+        End If
+        
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+        Stock = ws.Cells(i, 1).Value
+        volume = volume + ws.Cells(i, 7).Value
+        ClosePrice = ws.Cells(i, 6).Value
+        
+        ws.Range("I" & Summary) = Stock
+        ws.Range("L" & Summary) = volume
+        ws.Range("J" & Summary) = ClosePrice - OpenPrice
+
+'This gets rid of the divide by 0 error
+        
+        If ClosePrice = 0 Then
+        ws.Range("K" & Summary) = 0
+        Else
+        ws.Range("K" & Summary) = Format(((ClosePrice - OpenPrice) / ClosePrice), "Percent")
+        End If
+ 
+'this was the color of the year change
+       
+        If ClosePrice - OpenPrice < 0 Then
+        ws.Range("J" & Summary).Interior.ColorIndex = 3
+        ElseIf ClosePrice - OpenPrice > 0 Then
+        ws.Range("J" & Summary).Interior.ColorIndex = 4
+        End If
+        
+        Summary = Summary + 1
+        volume = 0
+        
+        Else
+        
+        volume = volume + ws.Cells(i, 7).Value
+        
+        End If
+    Next i
+    
+lastvolume = Cells(Rows.Count, 12).End(xlUp).Row
+Highvol = ws.Cells(2, 12)
+highper = ws.Cells(2, 11)
+Lowper = ws.Cells(2, 11)
+
+'This section was the show the highest % and volume
+
+    For j = 3 To lastvolume
+        
+        If ws.Cells(j, 12) > Highvol Then
+        Highvol = ws.Cells(j, 12)
+        Vticker = ws.Cells(j, 9)
+        End If
+        
+        If ws.Cells(j, 11) > highper Then
+        highper = ws.Cells(j, 11)
+        HPticker = ws.Cells(j, 9)
+        End If
+        
+        If ws.Cells(j, 11) < Lowper Then
+        Lowper = ws.Cells(j, 11)
+        LPticker = ws.Cells(j, 9)
+        End If
+        
+    Next j
+    
+        ws.Range("Q4") = Highvol
+        ws.Range("Q2") = Format(highper, "Percent")
+        ws.Range("Q3") = Format(Lowper, "percent")
+        ws.Range("P4") = Vticker
+        ws.Range("P2") = HPticker
+        ws.Range("P3") = LPticker
+    
+Next ws
+    
+End Sub
+
+
